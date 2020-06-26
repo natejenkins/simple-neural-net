@@ -241,8 +241,8 @@ class NeuralProvider extends React.Component {
 
   toggleRun = () => {
     let {isRunning} = this.state
-    this.setState({isRunning})
-    setTimeout(step, 0)
+    this.setState({isRunning: !isRunning}, ()=>{setTimeout(this.step, 0)})
+    
   }
   step = (event, numSteps = 100) => {
     if (!this.state.initialized) {
@@ -251,7 +251,8 @@ class NeuralProvider extends React.Component {
         initialized:true
       })
     }
-    let {batchSize, learningRate} = this.state
+    let {batchSize, learningRate, isRunning} = this.state
+
     _.range(isRunning ? numSteps : 1).forEach((s) => {
       totalSteps += 1
       if (direction === FORWARD) {
@@ -371,7 +372,9 @@ class NeuralProvider extends React.Component {
                 batchSize,
               )
               zeroAverages(nodes, edges)
-              avgLossArray.push(avgLoss / batchSiz)
+              this.setState({
+                avgLossArray: this.state.avgLossArray.concat(avgLoss / batchSize)
+              })
               avgLoss = 0
             }
             dataIndex = (dataIndex + 1) % numDataInputs
@@ -386,21 +389,26 @@ class NeuralProvider extends React.Component {
       }
     })
     if (isRunning) {
-      setTimeout(step, 0)
+      setTimeout(this.step, 0)
       // setUpdateGraphIndex(epoch)
       // setUpdateGraphIndex(currentLayerIndex)
       if (dataIndex % batchSize === 0) {
-        setUpdateGraphIndex(totalSteps)
+        this.setUpdateGraphIndex(totalSteps)
       }
       // setNodes(_.cloneDeep(nodes))
     } //
     else {
-      // will trigger a refresh of graph
-      // setNodes(_.cloneDeep(nodes))
-      setUpdateGraphIndex(currentLayerIndex)
+   
+      this.setUpdateGraphIndex(currentLayerIndex)
     }
     // console.info(nodes.map((n) => `bias: ${n.bias}`))
     // console.info(edges.map((e) => `${e.label} weight: ${e.weight}`))
+  }
+
+  setUpdateGraphIndex = index =>{
+    this.setState({
+      updateGraphIndex: index
+    })
   }
 
   setTrainingData = (trainingData, numRows, numCols) => {
@@ -445,7 +453,7 @@ class NeuralProvider extends React.Component {
         learningRate: this.state.learningRate,
         setLearningRate: this.setLearningRate,
         batchSize: this.state.batchSize,
-        setBatchSizeRef: this.setBatchSize,
+        setBatchSize: this.setBatchSize,
         currentInputData: {
           data: data[dataIndex],
           rows: rows,
