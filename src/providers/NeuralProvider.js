@@ -148,31 +148,34 @@ let totalSteps = 0
 let currentAnswer = 0
 let currentExpectedAnswer = 0
 
-function NeuralProvider({children}) {
-  const [myNodes, setNodes] = useState(nodes)
-  const [isRunning, setIsRunning] = useState(false)
-  const isRunningRef = useRef(isRunning)
-  const [updateGraphIndex, setUpdateGraphIndex] = useState(0)
-  const learningRateRef = useRef(0.1)
-  const batchSizeRef = useRef(1)
-  const [forceUpdate, setForceUpdate] = useState(0)
-  const avgLossArray = useRef([])
+class NeuralProvider extends React.Component {
+  state = {
+    isRunning: false,
+    updateGraphIndex: 0,
+    learningRate: 0.1,
+    batchSize: 1,
+    avgLossArray: []
+  }
 
-  const triggerUpdate = () => {
+
+  triggerUpdate = () => {
     setForceUpdate(Math.random())
   }
 
-  const setLearningRateRef = (newVal) => {
+  setLearningRate = (newVal) => {
     let newFloatVal = parseFloat(newVal)
-    learningRateRef.current = newFloatVal
-    triggerUpdate()
+    this.setState({
+      learningRate: newFloatVal
+    })
+    // triggerUpdate()
   }
-  const setBatchSizeRef = (newVal) => {
+  setBatchSize = (newVal) => {
     let newIntVal = parseInt(newVal)
-    batchSizeRef.current = newIntVal
-    triggerUpdate()
+    this.setState({
+      batchSize: newIntVal
+    })
   }
-  const init = () => {
+  init = () => {
     totalSteps = 0
     numDataInputs = data.length
     layerSizes = [data[0].length]
@@ -235,17 +238,21 @@ function NeuralProvider({children}) {
     avgLoss = 0.0
     console.info('Finished init')
   }
-  const toggleRun = () => {
-    setIsRunning(!isRunning)
-    isRunningRef.current = !isRunningRef.current
+
+  toggleRun = () => {
+    let {isRunning} = this.state
+    this.setState({isRunning})
     setTimeout(step, 0)
   }
-  const step = (event, numSteps = 100) => {
-    if (!initialized) {
-      init()
-      initialized = true
+  step = (event, numSteps = 100) => {
+    if (!this.state.initialized) {
+      this.init()
+      this.setState({
+        initialized:true
+      })
     }
-    _.range(isRunningRef.current ? numSteps : 1).forEach((s) => {
+    let {batchSize, learningRate} = this.state
+    _.range(isRunning ? numSteps : 1).forEach((s) => {
       totalSteps += 1
       if (direction === FORWARD) {
         // for the start of a forward pass load the data
@@ -349,22 +356,22 @@ function NeuralProvider({children}) {
               node.color = colors.backward
             })
             direction = FORWARD
-            if (dataIndex % batchSizeRef.current === 0) {
+            if (dataIndex % batchSize === 0) {
               adjustEdgeWeights(
                 edges,
-                learningRateRef.current,
-                batchSizeRef.current,
+                learningRate,
+                batchSize,
               )
               edges.forEach((edge) => {
                 edge.label = edge.weight.toFixed(2)
               })
               adjustNodeBiases(
                 nodes,
-                learningRateRef.current,
-                batchSizeRef.current,
+                learningRate,
+                batchSize,
               )
               zeroAverages(nodes, edges)
-              avgLossArray.current.push(avgLoss / batchSizeRef.current)
+              avgLossArray.push(avgLoss / batchSiz)
               avgLoss = 0
             }
             dataIndex = (dataIndex + 1) % numDataInputs
@@ -378,11 +385,11 @@ function NeuralProvider({children}) {
         }
       }
     })
-    if (isRunningRef.current) {
+    if (isRunning) {
       setTimeout(step, 0)
       // setUpdateGraphIndex(epoch)
       // setUpdateGraphIndex(currentLayerIndex)
-      if (dataIndex % batchSizeRef.current === 0) {
+      if (dataIndex % batchSize === 0) {
         setUpdateGraphIndex(totalSteps)
       }
       // setNodes(_.cloneDeep(nodes))
@@ -396,7 +403,7 @@ function NeuralProvider({children}) {
     // console.info(edges.map((e) => `${e.label} weight: ${e.weight}`))
   }
 
-  const setTrainingData = (trainingData, numRows, numCols) => {
+  setTrainingData = (trainingData, numRows, numCols) => {
     // console.info(trainingData)
     let maxVal = _.max(trainingData)
     let normalized = trainingData.map((val) => val / maxVal)
@@ -404,44 +411,55 @@ function NeuralProvider({children}) {
     cols = numCols
     data = _.chunk(normalized, rows * cols)
     initialized = false
+    this.setState({
+      initialized: false,
+      rows: numRows,
+      cols: numCols,
+      data: data
+    })
   }
 
-  const setLabelData = (labelData) => {
+  setLabelData = (labelData) => {
     expectedOutputs = labelData
   }
-  return (
+
+  render(){
+
+    return (
     <NeuralContext.Provider
       value={{
-        nodes: myNodes,
+        nodes: nodes,
         edges: edges,
         nodeLayers: layers,
         edgeLayers: edgeLayers,
-        init: init,
-        step: step,
+        init: this.init,
+        step: this.step,
         loss: loss,
         epoch: epoch,
-        toggleRun: toggleRun,
-        isRunning: isRunning,
+        toggleRun: this.toggleRun,
+        isRunning: this.state.isRunning,
         direction: direction === FORWARD ? 'forward' : 'backward',
         currentLayerIndex: currentLayerIndex,
-        setTrainingData: setTrainingData,
-        setLabelData: setLabelData,
-        learningRateRef: learningRateRef,
-        setLearningRateRef: setLearningRateRef,
-        batchSizeRef: batchSizeRef,
-        setBatchSizeRef: setBatchSizeRef,
+        setTrainingData: this.setTrainingData,
+        setLabelData: this.setLabelData,
+        learningRate: this.state.learningRate,
+        setLearningRate: this.setLearningRate,
+        batchSize: this.state.batchSize,
+        setBatchSizeRef: this.setBatchSize,
         currentInputData: {
           data: data[dataIndex],
           rows: rows,
           cols: cols,
         },
-        avgLoss: avgLossArray.current.slice(-200),
-        currentExpectedAnswer: currentExpectedAnswer,
-        currentAnswer: currentAnswer,
+        avgLoss: this.state.avgLossArray.slice(-200),
+        currentExpectedAnswer: this.state.currentExpectedAnswer,
+        currentAnswer: this.state.currentAnswer,
       }}>
-      {children}
+      {this.props.children}
     </NeuralContext.Provider>
   )
+  }
+  
 }
 
 export {NeuralProvider}

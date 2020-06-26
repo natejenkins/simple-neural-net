@@ -39,11 +39,9 @@ const MyDrawer = () => {
     setTrainingData,
     setLabelData,
     learningRate,
-    learningRateRef,
     setLearningRate,
-    setLearningRateRef,
-    batchSizeRef,
-    setBatchSizeRef,
+    batchSize,
+    setBatchSize,
     currentInputData,
     avgLoss
   } = useContext(NeuralContext)
@@ -163,10 +161,10 @@ const MyDrawer = () => {
           <TextField
             id="standard-basic"
             label="Learning Rate"
-            value={learningRateRef.current}
+            value={learningRate}
             onChange={(event) => {
               console.info('SETTING LEARNING RATE')
-              setLearningRateRef(event.target.value)
+              setLearningRate(event.target.value)
             }}
           />
         </ListItem>
@@ -174,9 +172,9 @@ const MyDrawer = () => {
           <TextField
             id="standard-basic"
             label="Batch Size"
-            value={batchSizeRef.current}
+            value={batchSize}
             onChange={(event) => {
-              setBatchSizeRef(event.target.value)
+              setBatchSize(event.target.value)
             }}
           />
         </ListItem>
