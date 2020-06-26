@@ -108,7 +108,7 @@ let expectedOutputs = [
   // [1],
 ]
 
-let hiddenLayerSizes = [4,5]
+let hiddenLayerSizes = [4,6]
 let layerSizes = [data[0].length]
   .concat(hiddenLayerSizes)
   .concat(expectedOutputs[0].length)

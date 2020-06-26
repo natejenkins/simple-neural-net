@@ -193,7 +193,7 @@ class MyGraph extends React.Component {
               <div>Input:</div>
               {this.drawCurrentInput(currentInputData)}
               {this.renderCurrentOutput(currentAnswer, currentExpectedAnswer)}
-              {showGraph && this.renderGraph(nodes, edges)}
+              {this.renderGraph(nodes, edges)}
               {showText &&
                 this.renderText(nodeLayers, edgeLayers, currentLayerIndex)}
             </React.Fragment>
