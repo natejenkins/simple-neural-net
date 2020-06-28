@@ -246,6 +246,7 @@ class NeuralProvider extends React.Component {
     let {batchSize, learningRate, isRunning} = this.state
 
     _.range(isRunning ? numSteps : 1).forEach((s) => {
+      console.info('stepping')
       totalSteps += 1
       if (direction === FORWARD) {
         // for the start of a forward pass load the data
