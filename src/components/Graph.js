@@ -164,10 +164,7 @@ class MyGraph extends React.Component {
     )
   }
 
-
-
   render() {
-
     return (
       <NeuralContext.Consumer>
         {({
@@ -184,10 +181,10 @@ class MyGraph extends React.Component {
           currentAnswer,
           currentExpectedAnswer,
         }) => {
-          console.info(avgLoss)
           // let showGraph = nodeLayers && nodeLayers[0] && nodeLayers[0].length<10
           let showGraph = nodes && nodes.length < 30
-          let showText = nodeLayers && nodeLayers[0] && nodeLayers[0].length>10
+          let showText =
+            nodeLayers && nodeLayers[0] && nodeLayers[0].length > 10
           return (
             <React.Fragment>
               {true && <LossPlot avgLoss={avgLoss} />}
