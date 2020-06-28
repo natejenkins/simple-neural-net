@@ -141,14 +141,13 @@ let cols = 1
 let totalSteps = 0
 let currentAnswer = 0
 let currentExpectedAnswer = 0
-
+let avgLossArray = []
 class NeuralProvider extends React.Component {
   state = {
     isRunning: false,
     updateGraphIndex: 0,
     learningRate: 0.1,
     batchSize: 1,
-    avgLossArray: [],
   }
 
   triggerUpdate = () => {
@@ -227,6 +226,7 @@ class NeuralProvider extends React.Component {
     }
     zeroAverages(nodes, edges)
     avgLoss = 0.0
+    avgLossArray = []
     console.info('Finished init')
   }
 
@@ -246,7 +246,6 @@ class NeuralProvider extends React.Component {
     let {batchSize, learningRate, isRunning} = this.state
 
     _.range(isRunning ? numSteps : 1).forEach((s) => {
-      console.info('stepping')
       totalSteps += 1
       if (direction === FORWARD) {
         // for the start of a forward pass load the data
@@ -356,11 +355,9 @@ class NeuralProvider extends React.Component {
               })
               adjustNodeBiases(nodes, learningRate, batchSize)
               zeroAverages(nodes, edges)
-              this.setState({
-                avgLossArray: this.state.avgLossArray.concat(
-                  avgLoss / batchSize,
-                ),
-              })
+
+              avgLossArray.push(avgLoss / batchSize)
+
               avgLoss = 0
             }
             dataIndex = (dataIndex + 1) % numDataInputs
@@ -437,7 +434,7 @@ class NeuralProvider extends React.Component {
             rows: rows,
             cols: cols,
           },
-          avgLoss: this.state.avgLossArray.slice(-200),
+          avgLoss: avgLossArray.slice(-200),
           currentExpectedAnswer: currentExpectedAnswer,
           currentAnswer: currentAnswer,
         }}>
