@@ -102,7 +102,7 @@ let expectedOutputs = [
   [0, 0, 1],
 ]
 
-let hiddenLayerSizes = [4, 6]
+let hiddenLayerSizes = [3]
 let layerSizes = [data[0].length]
   .concat(hiddenLayerSizes)
   .concat(expectedOutputs[0].length)
@@ -213,11 +213,11 @@ class NeuralProvider extends React.Component {
             from: previousNodes[k].id,
             to: currentNodes[j].id,
             level: i,
-            label: 'w' + j + k,
-            width: 4 * weight,
+            // label: 'w' + j + k,
+            width: Math.abs(4 * weight),
             weight: weight,
             flow: 0,
-            color: 'black',
+            color: weight > 0 ? 'green' : 'red',
           }
           edges.push(edge)
           edgeLayers[i][j].push(edge)
@@ -236,7 +236,7 @@ class NeuralProvider extends React.Component {
       setTimeout(this.step, 0)
     })
   }
-  step = (event, numSteps = 100) => {
+  step = (event, numSteps = 1000) => {
     if (!this.state.initialized) {
       this.init()
       this.setState({
@@ -253,7 +253,8 @@ class NeuralProvider extends React.Component {
           layers[currentLayerIndex].forEach((node, index) => {
             node.activation = data[dataIndex][index]
             node.label = data[dataIndex][index].toFixed(2)
-            node.color = colors.forward
+            // node.color = colors.forward
+            node.color = node.activation > 0.5 ? 'green' : 'red'
           })
           currentLayerIndex += 1
         }
@@ -269,7 +270,8 @@ class NeuralProvider extends React.Component {
             let ez = calcEZ(z)
             node.activation = sigmoid
             node.label = sigmoid.toFixed(2)
-            node.color = colors.forward
+            // node.color = colors.forward
+            node.color = node.activation > 0.5 ? 'green' : 'red'
             node.z = z
             node.ez = ez
             node.s2ez = Math.pow(node.activation, 2) * ez
@@ -308,10 +310,8 @@ class NeuralProvider extends React.Component {
           layers[currentLayerIndex].forEach((node, index) => {
             node.flow = lossGradient[index]
             node.avgFlow += node.flow
-            node.color = colors.backward
-            node.label = `a: ${node.activation.toFixed(
-              2,
-            )}\nf: ${node.flow.toFixed(2)}`
+            // node.color = colors.backward
+            node.label = `${node.activation.toFixed(2)}`
             node.biasFlow = node.flow * node.s2ez
             node.avgBiasFlow += node.biasFlow
           })
@@ -337,21 +337,21 @@ class NeuralProvider extends React.Component {
             })
             node.biasFlow = node.flow * node.s2ez
             node.avgBiasFlow += node.biasFlow
-            node.color = colors.backward
-            node.label = `a: ${node.activation.toFixed(
-              2,
-            )}\nf: ${node.flow.toFixed(2)}`
+            // node.color = colors.backward
+            node.label = `${node.activation.toFixed(2)}`
           })
 
           if (currentLayerIndex === 0) {
             layers[currentLayerIndex].forEach((node, index) => {
-              node.color = colors.backward
+              // node.color = colors.backward
             })
             direction = FORWARD
             if (dataIndex % batchSize === 0) {
               adjustEdgeWeights(edges, learningRate, batchSize)
               edges.forEach((edge) => {
-                edge.label = edge.weight.toFixed(2)
+                // edge.label = edge.weight.toFixed(2)
+                edge.width = Math.abs(4 * edge.weight)
+                edge.color = edge.weight > 0 ? 'green' : 'red'
               })
               adjustNodeBiases(nodes, learningRate, batchSize)
               zeroAverages(nodes, edges)
