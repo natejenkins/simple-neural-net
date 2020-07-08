@@ -17,6 +17,7 @@ const options = {
   edges: {
     color: '#ffffff',
   },
+  physics: false,
 }
 
 const events = {
@@ -52,6 +53,8 @@ class MyGraph extends React.Component {
   componentDidMount() {
     // autofocus the input on mount
   }
+
+  componentWillUnmount() {}
 
   renderNode = (node, edges) => {
     return (
@@ -192,7 +195,7 @@ class MyGraph extends React.Component {
               {this.drawCurrentInput(currentInputData)}
               {this.renderCurrentOutput(currentAnswer, currentExpectedAnswer)}
               {this.renderGraph(nodes, edges)}
-              {showText &&
+              {false &&
                 this.renderText(nodeLayers, edgeLayers, currentLayerIndex)}
             </React.Fragment>
           )
